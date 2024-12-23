@@ -1,0 +1,119 @@
+Repository pattern là một mẫu thiết kế phần mềm được sử dụng để tách biệt logic truy cập dữ liệu từ logic nghiệp vụ trong các ứng dụng. Nó cung cấp một giao diện trừu tượng để truy cập dữ liệu, giúp cho việc quản lý và truy xuất dữ liệu dễ dàng hơn mà không cần phải biết chi tiết về cách dữ liệu được lưu trữ.
+
+Ví dụ về cách triển khai Repository pattern trong C#:
+Bước 1: Tạo entity
+Đầu tiên, chúng ta sẽ tạo một lớp đại diện cho thực thể dữ liệu của chúng ta. Trong ví dụ này, chúng ta sẽ sử dụng một thực thể Product.
+
+public class Product
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+}
+
+Bước 2: Tạo Interface cho Repository
+Tiếp theo, chúng ta sẽ tạo một interface cho repository, định nghĩa các phương thức mà chúng ta sẽ triển khai.
+
+using System.Collections.Generic;
+
+public interface IProductRepository
+{
+    IEnumerable<Product> GetAll();
+    Product GetById(int id);
+    void Add(Product product);
+    void Update(Product product);
+    void Delete(int id);
+}
+
+Bước 3: Triển khai Repository
+Chúng ta sẽ triển khai interface IProductRepository bằng cách sử dụng một lớp cụ thể. Trong ví dụ này, chúng ta sẽ sử dụng một danh sách trong bộ nhớ để lưu trữ dữ liệu sản phẩm.
+
+using System.Collections.Generic;
+using System.Linq;
+
+public class ProductRepository : IProductRepository
+{
+    private readonly List<Product> _products = new List<Product>();
+
+    public IEnumerable<Product> GetAll()
+    {
+        return _products;
+    }
+
+    public Product GetById(int id)
+    {
+        return _products.FirstOrDefault(p => p.Id == id);
+    }
+
+    public void Add(Product product)
+    {
+        _products.Add(product);
+    }
+
+    public void Update(Product product)
+    {
+        var existingProduct = GetById(product.Id);
+        if (existingProduct != null)
+        {
+            existingProduct.Name = product.Name;
+            existingProduct.Price = product.Price;
+        }
+    }
+
+    public void Delete(int id)
+    {
+        var product = GetById(id);
+        if (product != null)
+        {
+            _products.Remove(product);
+        }
+    }
+}
+
+Bước 4: Sử dụng Repository trong Service
+public class ProductService
+{
+    private readonly IProductRepository _productRepository;
+
+    public ProductService(IProductRepository productRepository)
+    {
+        _productRepository = productRepository;
+    }
+
+    public void DisplayAllProducts()
+    {
+        var products = _productRepository.GetAll();
+        foreach (var product in products)
+        {
+            Console.WriteLine($"ID: {product.Id}, Name: {product.Name}, Price: {product.Price}");
+        }
+    }
+
+    public void AddProduct(Product product)
+    {
+        _productRepository.Add(product);
+    }
+}
+
+Dưới đây là một ví dụ về cách sử dụng ProductService và ProductRepository trong một ứng dụng console.
+class Program
+{
+    static void Main(string[] args)
+    {
+        IProductRepository productRepository = new ProductRepository();
+        ProductService productService = new ProductService(productRepository);
+
+        productService.AddProduct(new Product { Id = 1, Name = "Product 1", Price = 10.0m });
+        productService.AddProduct(new Product { Id = 2, Name = "Product 2", Price = 20.0m });
+
+        productService.DisplayAllProducts();
+    }
+}
+
+Giải thích
+Entity (Product): Đại diện cho dữ liệu mà chúng ta sẽ làm việc.
+Repository Interface (IProductRepository): Định nghĩa các phương thức cho thao tác dữ liệu.
+Repository Implementation (ProductRepository): Triển khai các phương thức đã định nghĩa trong interface.
+Service (ProductService): Sử dụng repository để thực hiện các thao tác nghiệp vụ.
+Program: Minh họa cách sử dụng service và repository trong ứng dụng.
+Repository pattern giúp tách biệt logic truy cập dữ liệu và logic nghiệp vụ, giúp cho mã nguồn dễ bảo trì và mở rộng hơn.
